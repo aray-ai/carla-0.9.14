@@ -1,0 +1,35 @@
+# https://arayinfosolutions.com/
+# This is the ros2 carla9.14 integration.
+# Related files can be found under our aray-ai github repository.
+# https://github.com/aray-ai/carla-0.9.14
+
+Please read this before installing the carla ros
+
+1. System requirements
+	-Ubuntu 20.04 as OS
+	-Docker installed
+	-nvidia GPU
+2. Software used-
+	- carla version 9.14
+	- ROS2 Humble
+	- Python 3.10 environment
+
+3. All the Docker files are stored in the respective folders.
+4. They are ready to use.
+5. If you find any problem in the compilation of the images, you can use the docker image files.
+6. These files are saved under image folder.
+7. Below are the important docker commands..
+
+8. To compile the docker images- 
+   docker build --tag <image_name> .
+   
+9. If you make and change in the Dockerfile and want to rebuild the image- 
+   docker compose build --no-cache <service_name>
+   
+10. If you all the images are ready, to compose the container for final run- 
+   docker compose up --build
+
+11. If you are using the prebuild images from the image folder, you first need to mount those images-
+   docker load -i carla9.14_python3.10.tar
+
+
