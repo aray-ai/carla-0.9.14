@@ -1,0 +1,104 @@
+# https://arayinfosolutions.com/
+# This is the ros2 carla9.14 integration.
+# Related files can be found under our aray-ai github repository.
+# https://github.com/aray-ai/carla-0.9.14
+
+
+# This docker compose file contains..
+# 1. Carla 9.14 compiled in python 3.10 environment.
+# 2. ROS2 humble
+# 3. Carla ROS bridge
+# 4. carla client container using python 3.10 environment.
+
+services:
+
+  carla:
+    image: carlasim/carla:0.9.14
+    container_name: carla_server
+    # Sets shared memory to 1GB
+    shm_size: 8g 
+    ports:
+      - 2000-2002:2000-2002
+    command: /bin/bash -c "./CarlaUE4.sh -nosound -RenderOffscreen"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      # Fix a bug with QT
+      - QT_X11_NO_MITSHM=1 
+      - SDL_VIDEODRIVER=x11
+
+    privileged: true
+    network_mode: "host"
+    stdin_open: true
+    tty: true
+
+  # Carla ROS bridge container
+  ros-bridge:
+    build:
+      # Replace with the actual path to your ros-bridge Dockerfile
+      context: ./ros_carla_bridge/
+      # Optional if your file is already named Dockerfile
+      dockerfile: Dockerfile
+
+    image: carla-ros-bridge:0.9.14
+    container_name: ros_bridge
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      # X11 socket for GUI
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./config/objects.json:/root/config/objects.json
+      - ./config/carla_ros.rviz:/root/config/carla_ros.rviz
+    network_mode: host
+    tty: true
+    stdin_open: true
+    runtime: nvidia
+    restart: always
+    depends_on: 
+      carla:
+        condition: service_started            
+        
+  # Custom ROS2 container using ROS2 Humble
+  ros2_container:
+#    build:
+#      context: ./ros2-container/
+#      dockerfile: Dockerfile
+    image: ros2-humble-full
+    container_name: ros2_container
+    command: bash -c "source /opt/ros/humble/setup.bash && ros2 run ros2_utils list_topics_node"
+    depends_on: 
+      ros-bridge:
+        condition: service_started
+
+  # foxglove 
+
+  foxglove:
+#    image: ghcr.io/foxglove/studio:latest
+    image: ghcr.io/jpc/studio:latest
+    ports:
+      - 8080:8080
+    container_name: foxglove_studio
+    restart: always
+
+
+  # foxglove to visualize live data 
+  foxglove_bridge:
+    build:
+      context: ./foxglove_bridge/
+      dockerfile: Dockerfile
+    ports:
+      - 8765:8765
+    container_name: foxglove_bridge
+    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
+    restart: always
+    depends_on: 
+      ros-bridge:
+        condition: service_started
