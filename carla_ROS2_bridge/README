@@ -1,0 +1,20 @@
+# https://arayinfosolutions.com/
+# This is the ros2 carla9.14 integration.
+# Related files can be found under our aray-ai github repository.
+# https://github.com/aray-ai/carla-0.9.14
+
+Please read this before installing the carla ros
+
+1. This docker uses carla 9.14 official image from carlasim/carla:0.9.14
+2. Run the docker-compose.yaml
+3. download the python3.10_dock.sh and make it executable. chmod +x python3.10_dock.sh
+
+
+4. docker exec -u root -it carla_server bash
+5. ./python3.10_dock.sh
+
+Enjoy the docker ROS with foxglove!
+
+For manual installation in carla_server container follow the file python_in_docker
+
+

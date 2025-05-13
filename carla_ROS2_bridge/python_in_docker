@@ -1,0 +1,58 @@
+ Step-by-Step: Install Python 3.10 and pip manually inside the container
+🔹 1. Start your CARLA container with a shell
+
+docker exec -u root -it carla_server bash
+
+🔹 2. Update and install required build dependencies
+
+apt-get update && apt-get install -y \
+  wget build-essential libssl-dev zlib1g-dev \
+  libncurses5-dev libncursesw5-dev libreadline-dev \
+  libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev \
+  libexpat1-dev liblzma-dev tk-dev libffi-dev uuid-dev
+
+🔹 3. Download and extract Python 3.10 source
+
+cd /usr/src
+wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
+tar xzf Python-3.10.13.tgz
+cd Python-3.10.13
+
+🔹 4. Build and install Python 3.10
+
+This step may take a few minutes (~5–10 mins).
+
+./configure --enable-optimizations
+make -j$(nproc)
+make altinstall
+
+❗ Use make altinstall (not make install) to avoid overwriting the system’s default Python.
+
+🔹 5. Verify the installation
+
+python3.10 --version
+
+🔹 6. Install pip for Python 3.10
+
+wget https://bootstrap.pypa.io/get-pip.py
+python3.10 get-pip.py
+
+🔹 7. Verify pip
+
+python3.10 -m pip --version
+
+(Optional) Set Python 3.10 as default python3
+
+update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1
+update-alternatives --set python3 /usr/local/bin/python3.10
+
+Finally: Install CARLA .whl API
+
+Once Python 3.10 + pip are installed, copy the .whl file from host:
+
+docker cp carla-0.9.14-cp310-cp310-linux_x86_64.whl carla_server:/home/carla/PythonAPI/carla/dist
+
+Inside the container:
+
+cd /home/carla/PythonAPI/carla/dist
+python3.10 -m pip install carla-0.9.14-cp310-cp310-linux_x86_64.whl
