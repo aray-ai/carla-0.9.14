@@ -3,48 +3,53 @@
 # Related files can be found under our aray-ai github repository.
 # https://github.com/aray-ai/carla-0.9.14
 
-FROM osrf/ros:humble-desktop
 
-# Install colcon
+FROM carlasim/carla:0.9.14 AS carla
+
+FROM ros:humble-ros-base
+
+# Install dependencies
 RUN apt update && apt install -y \
     python3-colcon-common-extensions \
     python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    git \
+    wget \
+    curl \
+    ros-humble-rviz2 \
+    ros-humble-rviz-common \
+    ros-humble-rviz-default-plugins \
+    ros-humble-pcl-conversions \
+    ros-humble-pcl-ros \
+    ros-humble-tf2 \
+    ros-humble-tf2-eigen \
+    ros-humble-tf2-ros \
+    ros-humble-sensor-msgs \
+    libtf2-eigen-dev
 
-# Setup ROS 2 Workspace
-SHELL ["/bin/bash", "-c"]
+# Fix pip issue
+RUN pip install setuptools==65.5.1
 
-# Copy your workspace
-COPY ./ros2_ws /ros2_ws
-WORKDIR /ros2_ws
-
-# Build the workspace
-RUN . /opt/ros/humble/setup.sh && \
-    colcon build --symlink-install
-    
-
-SHELL ["/bin/bash", "-c"]
-
-# Install system dependencies
-RUN apt update && apt install -y wget 
-
-# installing the git
-RUN apt update && apt install -y git
-
-# Install pip
-RUN apt update && apt install -y python3-pip
-    
 # Install Python dependencies
-RUN pip3 install pygame transforms3d
-    
-# Copy and install carla egg
-RUN wget https://raw.githubusercontent.com/aray-ai/carla-0.9.14/main/carla-egg-whl/carla-0.9.14-cp310-cp310-linux_x86_64.whl -O /root/carla-0.9.14-cp310-cp310-linux_x86_64.whl && \
-    pip3 install /root/carla-0.9.14-cp310-cp310-linux_x86_64.whl
-    
-COPY ./ros_entrypoint.sh /
+COPY src/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
-# Ensure script is executable
-RUN ["chmod", "+x", "/ros_entrypoint.sh"]
+# Set up colcon workspace
+WORKDIR /opt/carla-ros-bridge
+COPY ./src ./src
 
+# Install CARLA PythonAPI
+COPY --from=carla /home/carla/PythonAPI /opt/carla/PythonAPI
+
+# Build ROS 2 workspace
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
+
+# Source workspace in bashrc
+RUN echo "source /opt/carla-ros-bridge/install/setup.bash" >> ~/.bashrc
+
+# supress the audio warning from pygame
+ENV SDL_AUDIODRIVER=dummy
+
+# Entrypoint
+COPY ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["bash"]

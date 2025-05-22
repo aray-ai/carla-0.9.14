@@ -1,0 +1,2 @@
+Invoking command in '/home/user1/carla-ros-914/ros2-container/build/pcl_recorder': /usr/bin/cmake /home/user1/carla-ros-914/ros2-container/src/pcl_recorder_backup -DCMAKE_INSTALL_PREFIX=/home/user1/carla-ros-914/ros2-container/install/pcl_recorder
+Invoked command in '/home/user1/carla-ros-914/ros2-container/build/pcl_recorder' returned '1': /usr/bin/cmake /home/user1/carla-ros-914/ros2-container/src/pcl_recorder_backup -DCMAKE_INSTALL_PREFIX=/home/user1/carla-ros-914/ros2-container/install/pcl_recorder

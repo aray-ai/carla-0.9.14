@@ -30,21 +30,18 @@ services:
       - DISPLAY=${DISPLAY}
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      # Fix a bug with QT
       - QT_X11_NO_MITSHM=1 
       - SDL_VIDEODRIVER=x11
-
     privileged: true
-    network_mode: "host"
     stdin_open: true
     tty: true
-
+    network_mode: "host"
+    
+    
   # Carla ROS bridge container
   ros-bridge:
     build:
-      # Replace with the actual path to your ros-bridge Dockerfile
       context: ./ros_carla_bridge/
-      # Optional if your file is already named Dockerfile
       dockerfile: Dockerfile
     container_name: ros_bridge
     environment:
@@ -52,12 +49,14 @@ services:
       - QT_X11_NO_MITSHM=1
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      # connecting with carla network host
+      - CARLA_HOST=172.17.0.1
+      - CARLA_PORT=2000
+#    command: ros2 launch carla_ros_bridge carla_ros_bridge.launch.py host:=172.17.0.1
     volumes:
-      # X11 socket for GUI
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./config/objects.json:/root/config/objects.json
       - ./config/carla_ros.rviz:/root/config/carla_ros.rviz
-    network_mode: host
     tty: true
     stdin_open: true
     runtime: nvidia
@@ -65,34 +64,73 @@ services:
     depends_on: 
       carla:
         condition: service_started            
+    networks:
+      - carla-ros-914_default
+         
         
   # Custom ROS2 container using ROS2 Humble
   ros2_container:
     build:
       context: ./ros2-container/
       dockerfile: Dockerfile
-
     container_name: ros2_container
     environment:
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - CARLA_HOST=172.17.0.1
+      - CARLA_PORT=2000
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+   # optional, if using modern desktop environments
+      - /run/user/1000:/run/user/1000
     command: >
-      bash -c "sleep 10 &&
-               source /opt/ros/humble/setup.bash &&
-               source /ros2_ws/install/setup.bash &&
-               ros2 run ros2_utils my_node"
-    depends_on: 
+      bash -c "mkdir -p /tmp/runtime-root &&
+               sleep 10 &&
+               ros2 run carla_manual_control carla_manual_control"
+    depends_on:
       ros-bridge:
         condition: service_started
+    networks:
+      - carla-ros-914_default
+
+
+
+  # Custom Carla Node
+#  carla_client:
+#    build:
+#      context: ./carla_client_node/
+#      dockerfile: Dockerfile
+#    container_name: carla_client
+#    environment:
+#      # connecting with carla network host
+#      - CARLA_HOST=172.17.0.1
+#      - CARLA_PORT=2000
+#    restart: always
+#    depends_on: 
+#      carla:
+#        condition: service_started
+#      ros-bridge:
+#        condition: service_started
+#    networks:
+#      - carla-ros-914_default
 
   # foxglove 
 
   foxglove:
+#    image: ghcr.io/foxglove/studio:latest
     image: ghcr.io/jpc/studio:latest
     ports:
       - 8080:8080
     container_name: foxglove_studio
     restart: always
+    environment:
+      # connecting with carla network host
+      - CARLA_HOST=172.17.0.1
+      - CARLA_PORT=2000
+    networks:
+      - carla-ros-914_default
 
 
   # foxglove to visualize live data 
@@ -106,10 +144,37 @@ services:
     environment:
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-
+      # connecting with carla network host
+      - CARLA_HOST=172.17.0.1
+      - CARLA_PORT=2000
     command: ros2 launch /launch/foxglove_bridge_launch.xml port:=8765
     restart: always
     depends_on: 
       ros-bridge:
         condition: service_started
-    network_mode: "host"
+    networks:
+      - carla-ros-914_default
+
+
+# The default ntwork used
+
+networks:
+  carla-ros-914_default:
+
+  # Example ros talker node
+#  ros_talker:
+#    image: osrf/ros:humble-desktop-full
+#    environment:
+#      # connecting with carla network host
+#      - CARLA_HOST=172.17.0.1
+#      - CARLA_PORT=2000
+#    command: ros2 run demo_nodes_cpp talker
+
+   # Example ros listener node
+#  ros_listener:
+#    image: osrf/ros:humble-desktop-full
+#    command: ros2 run demo_nodes_cpp listener
+#    depends_on:
+#      - ros_talker
+#    networks:
+#      - carla-ros-914_default

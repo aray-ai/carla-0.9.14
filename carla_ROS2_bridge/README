@@ -6,15 +6,36 @@
 Please read this before installing the carla ros
 
 1. This docker uses carla 9.14 official image from carlasim/carla:0.9.14
-2. Run the docker-compose.yaml
-3. download the python3.10_dock.sh and make it executable. chmod +x python3.10_dock.sh
+    before running the docker-compose.yaml file, the below steps should be followed..
+
+2.  First clone the ros_bridge repository..
+
+    cd ros_carla_bridge/
+    git clone https://github.com/carla-simulator/ros-bridge.git src
+
+3.  Clone the ros_bridge repository in ros2_container
+    cd ros2-container/
+    git clone https://github.com/carla-simulator/ros-bridge.git src
+
+4.  replace the pcl_recorder folder under ros2_container/src from the aray-ai github.
 
 
-4. docker exec -u root -it carla_server bash
-5. ./python3.10_dock.sh
+5.  Run this command on host before compiling all container via command "docker compose up --build"
+
+    xhost +si:localuser:root
+    echo $DISPLAY
+    if comes 0 set zero below, like export DISPLAY=:0
+    export DISPLAY=:1  # or :0 depending on your setup
+
+6. Build the container
+   docker compose up --build" 
+
+7. Run the docker-compose.yaml
+8. download the python3.10_dock.sh and make it executable. chmod +x python3.10_dock.sh
+9. download the carla-0.9.14-cp310-cp310-linux_x86_64.whl to your local host machine.
+10. docker exec -u root -it carla_server bash
+11. ./python3.10_dock.sh
 
 Enjoy the docker ROS with foxglove!
-
-For manual installation in carla_server container follow the file python_in_docker
 
 

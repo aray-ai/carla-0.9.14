@@ -1,0 +1,12 @@
+CMake Error at /usr/share/cmake-3.16/Modules/CMakeDetermineCCompiler.cmake:49 (message):
+  Could not find compiler set in environment variable CC:
+
+  clang-6.0.
+Call Stack (most recent call first):
+  CMakeLists.txt:2 (project)
+
+
+CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+-- Configuring incomplete, errors occurred!
+See also "/home/user1/carla-ros-914/ros2-container/build/pcl_recorder/CMakeFiles/CMakeOutput.log".

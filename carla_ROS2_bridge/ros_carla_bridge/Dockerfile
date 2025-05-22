@@ -4,7 +4,7 @@
 # https://github.com/aray-ai/carla-0.9.14
 
 #FROM ros2-humble-full:latest
-FROM  osrf/ros:humble-desktop AS base
+FROM  osrf/ros:humble-desktop-full AS base
 
 SHELL ["/bin/bash", "-c"]
 
@@ -17,7 +17,6 @@ RUN apt update && apt install -y git
 # Install required ROS message package
 RUN apt update && \
     apt install -y ros-humble-derived-object-msgs python3-colcon-common-extensions
-#    ros-humble-derived-object-msgs
 
 # Install pip
 RUN apt update && apt install -y python3-pip

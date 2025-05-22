@@ -1,0 +1,14 @@
+[0.020s] Invoking command in '/home/user1/carla-ros-914/ros2-container/build/pcl_recorder': /usr/bin/cmake /home/user1/carla-ros-914/ros2-container/src/pcl_recorder_backup -DCMAKE_INSTALL_PREFIX=/home/user1/carla-ros-914/ros2-container/install/pcl_recorder
+[0.043s] CMake Error at /usr/share/cmake-3.16/Modules/CMakeDetermineCCompiler.cmake:49 (message):
+[0.044s]   Could not find compiler set in environment variable CC:
+[0.044s] 
+[0.044s]   clang-6.0.
+[0.044s] Call Stack (most recent call first):
+[0.044s]   CMakeLists.txt:2 (project)
+[0.045s] 
+[0.045s] 
+[0.045s] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[0.045s] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[0.046s] -- Configuring incomplete, errors occurred!
+[0.046s] See also "/home/user1/carla-ros-914/ros2-container/build/pcl_recorder/CMakeFiles/CMakeOutput.log".
+[0.048s] Invoked command in '/home/user1/carla-ros-914/ros2-container/build/pcl_recorder' returned '1': /usr/bin/cmake /home/user1/carla-ros-914/ros2-container/src/pcl_recorder_backup -DCMAKE_INSTALL_PREFIX=/home/user1/carla-ros-914/ros2-container/install/pcl_recorder
